@@ -1,94 +1,110 @@
 <template>
-    <div v-html="htmlContent" :class="talkId"></div>
+  <div :id="id" class="markdown-container" v-html="renderedContent"></div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import 'highlight.js/styles/monokai-sublime.css'
+import { ref, watch, onMounted, nextTick } from 'vue';
 import { marked } from 'marked';
-import { markedHighlight } from "marked-highlight"
-import hljs from 'highlight.js'
+import DOMPurify from 'dompurify';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css';
+import { markedHighlight } from 'marked-highlight';
 
-const props = defineProps(['value', 'boxId'])
-const talkId = 'markdown-body-' + props.boxId
-const htmlContent = ref('');
-const render = new marked.Renderer()
+const props = defineProps({
+  content: {
+    type: String,
+    required: true
+  },
+  id: {
+    type: String,
+    required: true
+  }
+});
+
+const renderedContent = ref('');
+
+// 配置marked
 marked.setOptions({
-    renderer: render
-})
+  breaks: true,
+  gfm: true
+});
 marked.use(markedHighlight({
-    langPrefix: 'hljs language-',
-    highlight(code: string, lang: string) {
-        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-        return hljs.highlight(code, { language }).value;
-    }
+  langPrefix: 'hljs language-',
+  highlight(code: string, lang: string) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  }
 }));
+// 自定义渲染器处理div标签
+const renderer = new marked.Renderer();
 
-// 解析 Markdown 内容
-const parseMarkdown = async () => {
-    const result = await marked.parse(htmlContent.value);
-    htmlContent.value = typeof result === 'string' ? result : await result;
+// 重写html渲染方法
+renderer.html = (html) => {
+  // 保留div标签及其内容
+  if (html.startsWith('<div') || html.startsWith('</div')) {
+    return html;
+  }
+  // 对其他HTML标签进行转义
+  return html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 
-// 监听 value 变化
-watch(
-    () => props.value,
-    (val) => {
-        if (val) {
-            parseMarkdown();
-        }
-    },
-    { immediate: true }
-);
+// 渲染Markdown内容
+const renderMarkdown = (content: string): string => {
+  // 使用marked解析Markdown
+  const rawHtml = marked(content, { renderer }) as string;
+  
+  // 使用DOMPurify消毒
+  const cleanHtml = DOMPurify.sanitize(rawHtml, {
+    ALLOWED_TAGS: ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+                   'strong', 'em', 'blockquote', 'code', 'pre', 
+                   'ul', 'ol', 'li', 'a', 'img', 'br', 'hr', 'span'],
+    ALLOWED_ATTR: ['class', 'href', 'src', 'alt', 'style']
+  });
+  
+  return cleanHtml;
+};
+
+// 高亮代码块
+const highlightCode = () => {
+  nextTick(() => {
+    const container = document.getElementById(props.id);
+    if (container) {
+      container.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block as HTMLElement);
+      });
+    }
+  });
+};
+
+// 监听内容变化
+watch(() => props.content, (newContent) => {
+  renderedContent.value = renderMarkdown(newContent);
+  highlightCode();
+}, { immediate: true });
 
 onMounted(() => {
-    if (props.value) {
-        parseMarkdown();
-    }
+  highlightCode();
 });
 </script>
+
+<style scoped>
+.markdown-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  word-break: break-word;
+}
+</style>
+
 <style>
-[class|=markdown-body] {
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-pre {
-    position: relative;
-}
-
-pre .enhance {
-    display: flex;
-    color: #247aaa;
-    padding: 10px;
-    box-sizing: border-box;
-    font-size: 12px;
-    border-radius: 9px;
-    justify-content: flex-end;
-    position: absolute;
-    top: 0;
-    right: 0;
-}
-
-pre .enhance .copyCode {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-pre .enhance .copyCode:hover {
-    color: rgba(2, 120, 255, 0.84);
-}
-
-pre .enhance .copyCode i {
-    font-size: 16px;
-    margin-left: 5px;
-}
-
-.markdown-body code,
-.markdown-body tt {
-    background-color: #ffe6e6;
-    color: #df3b3b;
+/* 特殊样式 - 思考框 */
+.markdown-container .think {
+  display: inline-block;
+  padding: 12px 24px;
+  color: #999999;
+  font-size: 13px;
+  background: #ffffff66;
+  margin: 5px;
+  border-radius: 5px;
 }
 </style>

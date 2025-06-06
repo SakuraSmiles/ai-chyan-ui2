@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import type { ChatMessage } from '../../types/chat';
-import Markdown from '../textarea/Markdown1.vue';
+import Markdown from '../textarea/Markdown.vue';
 defineProps<{
   messages: ChatMessage[];
 }>();

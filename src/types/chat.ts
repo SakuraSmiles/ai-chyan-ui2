@@ -1,8 +1,9 @@
 // 消息类型
 export interface ChatMessage {
     id: string;           // 消息唯一ID
-    role: 'user' | 'assistant' | 'system'; // 消息角色
-    content: string;      // 消息内容
+    type: 'system' | 'user' | 'assistant'; // 消息类型
+    content: string;      // 用户消息内容
+    reply: string;        // 助手回复内容
     timestamp: Date;      // 消息时间戳
 }
 

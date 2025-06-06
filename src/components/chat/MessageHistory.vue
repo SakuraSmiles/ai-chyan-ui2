@@ -1,31 +1,55 @@
 <template>
   <div class="message-history">
     <div v-for="message in messages" :key="message.id" class="message-item">
-      <div v-if="message.role === 'user'" class="user-message">
-        <div class="avatar">
-          <el-avatar :size="36" icon="UserFilled" />
-        </div>
-        <div class="content">
-          <div class="name">用户</div>
-          <div class="bubble">{{ message.content }}</div>
-        </div>
+      <!-- 系统消息 -->
+      <div v-if="message.type === 'system'" class="system-message">
+        <div class="bubble">{{ message.reply }}</div>
       </div>
       
-      <div v-else class="assistant-message">
-        <div class="avatar">
-          <el-avatar :size="36" icon="Avatar" />
+      <!-- 用户消息 -->
+      <template v-else>
+        <div class="user-message">
+          <div class="content">
+            <div class="name" style="text-align: right">用户</div>
+            <div class="bubble">{{ message.content }}</div>
+          </div>
+          <div class="avatar">
+            <el-avatar :size="36" icon="UserFilled" />
+          </div>
         </div>
-        <div class="content">
-          <div class="name">助手</div>
-          <div class="bubble">{{ message.content }}</div>
+        
+        <!-- 助手回复 -->
+        <div class="assistant-message" v-if="message.reply">
+          <div class="avatar">
+            <el-avatar :size="36" icon="Avatar" />
+          </div>
+          <div class="content">
+            <div class="name">助手</div>
+            <div class="bubble">{{ message.reply }}</div>
+          </div>
         </div>
-      </div>
+        
+        <!-- 加载状态 -->
+        <div class="assistant-message" v-else>
+          <div class="avatar">
+            <el-avatar :size="36" icon="Avatar" />
+          </div>
+          <div class="content">
+            <div class="name">助手</div>
+            <div class="bubble loading">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ChatMessage } from '@/types/chat';
+import type { ChatMessage } from '../../types/chat';
 
 defineProps<{
   messages: ChatMessage[];
@@ -43,13 +67,29 @@ defineProps<{
   margin-bottom: 20px;
 }
 
+.system-message {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.system-message .bubble {
+  background-color: #f2f6fc;
+  padding: 8px 16px;
+  border-radius: 18px;
+  font-size: 12px;
+  color: #909399;
+}
+
 .user-message, .assistant-message {
   display: flex;
+  margin: 8px 0;
 }
 
 .user-message {
   justify-content: flex-end;
 }
+
 
 .assistant-message {
   justify-content: flex-start;
@@ -73,6 +113,7 @@ defineProps<{
   padding: 12px;
   border-radius: 4px;
   line-height: 1.5;
+  word-break: break-word;
 }
 
 .user-message .bubble {
@@ -83,5 +124,38 @@ defineProps<{
 .assistant-message .bubble {
   background-color: #f0f4ff;
   border-top-left-radius: 0;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #909399;
+  margin: 0 3px;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 </style>

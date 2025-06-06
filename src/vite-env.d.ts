@@ -9,7 +9,6 @@ declare module '*.vue' {
 
 // 添加路径别名声明
 declare module '@/*' {
-  import type { DefineComponent } from 'vue'
-  const component: DefineComponent<{}, {}, any>
-  export default component
+  const value: any
+  export default value
 }

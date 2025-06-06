@@ -25,7 +25,12 @@
           </div>
           <div class="content">
             <div class="name">助手</div>
-            <div class="bubble">{{ message.reply }}</div>
+            <!-- <div class="bubble">{{ message.reply }}</div> -->
+             <Markdown 
+              class="bubble" 
+              :content="message.reply" 
+              :id="'md-' + message.id" 
+            />
           </div>
         </div>
         
@@ -50,7 +55,7 @@
 
 <script setup lang="ts">
 import type { ChatMessage } from '../../types/chat';
-
+import Markdown from '../textarea/Markdown1.vue';
 defineProps<{
   messages: ChatMessage[];
 }>();

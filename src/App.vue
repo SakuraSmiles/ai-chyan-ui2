@@ -11,7 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from 'vue';
+import { nextTick, onUnmounted, ref } from 'vue';
+import { sseManager } from './utils/sseManager';
 import MessageInput from '@/components/chat/MessageInput.vue';
 import MessageHistory from '@/components/chat/MessageHistory.vue';
 import type { ChatMessage } from './types/chat';
@@ -26,6 +27,8 @@ const messages = ref<ChatMessage[]>([
     timestamp: new Date()
   }
 ]);
+const url = ref('http://localhost:8080/rag/search?message=')
+const currentMessageId = ref<string | null>(null);
 
 // 处理发送消息
 const handleSendMessage = (content: string) => {
@@ -37,25 +40,30 @@ const handleSendMessage = (content: string) => {
     reply: '',
     timestamp: new Date()
   };
-  
   messages.value.push(newMessage);
-  
-  // 模拟助手回复
-  setTimeout(() => {
-    // 找到最新添加的消息并更新回复
-    const index = messages.value.findIndex((msg: ChatMessage) => msg.id === newMessage.id);
-    if (index !== -1) {
-      messages.value[index].reply = `已收到您的消息："${content}"，我正在处理中...`;
-      
-      // 创建新数组触发响应式更新
-      messages.value = [...messages.value];
-      
-      // 滚动到底部
-      scrollToBottom();
-    }
-  }, 1000);
+  currentMessageId.value = newMessage.id;
+  sseManager.connect(url.value+content,handleMessage,handleError)
+  scrollToBottom();
 };
-
+const handleMessage = (data: string) =>{
+  if (!currentMessageId.value) return;
+  const index = messages.value.findIndex(msg => msg.id === currentMessageId.value);
+  let json_data = transformThink(JSON.parse(data).content)
+  if (index !== -1) {
+    messages.value[index].reply += json_data;
+    messages.value = [...messages.value];
+    scrollToBottom();
+  }
+}
+const handleError = () =>{
+  if (!currentMessageId.value) return;
+  
+  const index = messages.value.findIndex(msg => msg.id === currentMessageId.value);
+  if (index !== -1) {
+    currentMessageId.value = null;
+    scrollToBottom();
+  }
+}
 // 滚动到底部方法
 const scrollToBottom = () => {
   nextTick(() => {
@@ -65,6 +73,13 @@ const scrollToBottom = () => {
     }
   });
 };
+const transformThink = (text: string) => {
+  return text.replace("<think>", "<div class='think'>").replace("</think>", "</div>")
+    .replace("`", "\`");
+}
+onUnmounted(() => {
+  sseManager.close();
+});
 </script>
 
 <style>

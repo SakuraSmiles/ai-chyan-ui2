@@ -1,20 +1,28 @@
 <template>
   <div class="chat-app">
-    <el-main class="chat-container">
-      <MessageHistory :messages="messages" />
-    </el-main>
-    
-    <el-footer height="auto" class="input-container">
-      <MessageInput @send="handleSendMessage" />
-    </el-footer>
+    <el-container>
+      <el-aside width="80px">
+        <Sidebar @selectBot="handleSelectBot" @addBot="handleAddBot" @setting="handleSetting" @about="handleAbout" />
+      </el-aside>
+      <el-container>
+        <el-main class="chat-container">
+          <MessageHistory :messages="messages" />
+        </el-main>
+
+        <el-footer height="auto" class="input-container">
+          <MessageInput @send="handleSendMessage" />
+        </el-footer>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
 <script setup lang="ts">
 import { nextTick, onUnmounted, ref } from 'vue';
 import { sseManager } from './utils/sseManager';
-import MessageInput from '@/components/chat/MessageInput.vue';
-import MessageHistory from '@/components/chat/MessageHistory.vue';
+import MessageInput from './components/chat/MessageInput.vue';
+import MessageHistory from './components/chat/MessageHistory.vue';
+import Sidebar from './components/layout/Siderbar.vue';
 import type { ChatMessage } from './types/chat';
 
 // 初始消息数据
@@ -42,10 +50,10 @@ const handleSendMessage = (content: string) => {
   };
   messages.value.push(newMessage);
   currentMessageId.value = newMessage.id;
-  sseManager.connect(url.value+content,handleMessage,handleError)
+  sseManager.connect(url.value + content, handleMessage, handleError)
   scrollToBottom();
 };
-const handleMessage = (data: string) =>{
+const handleMessage = (data: string) => {
   if (!currentMessageId.value) return;
   const index = messages.value.findIndex(msg => msg.id === currentMessageId.value);
   let json_data = transformThink(JSON.parse(data).content)
@@ -55,15 +63,36 @@ const handleMessage = (data: string) =>{
     scrollToBottom();
   }
 }
-const handleError = () =>{
+const handleError = () => {
   if (!currentMessageId.value) return;
-  
+
   const index = messages.value.findIndex(msg => msg.id === currentMessageId.value);
   if (index !== -1) {
     currentMessageId.value = null;
     scrollToBottom();
   }
 }
+
+const handleSelectBot = (bot: any) => {
+  console.log('选择机器人:', bot);
+  // 这里实现切换机器人的逻辑
+};
+
+// 处理添加机器人
+const handleAddBot = () => {
+  console.log('添加新机器人');
+};
+
+// 处理系统设置
+const handleSetting = () => {
+  console.log('打开系统设置');
+};
+
+// 处理关于
+const handleAbout = () => {
+  console.log('打开关于页面');
+};
+
 // 滚动到底部方法
 const scrollToBottom = () => {
   nextTick(() => {
@@ -110,6 +139,6 @@ onUnmounted(() => {
 
 .input-container {
   padding: 0;
-  border-top: 1px solid #dcdfe6;
+  /* border-top: 1px solid #dcdfe6; */
 }
 </style>

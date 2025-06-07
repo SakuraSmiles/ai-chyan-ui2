@@ -15,13 +15,13 @@
         <!-- 底部操作按钮 -->
         <div class="sidebar-actions">
             <div class="action-item">
-                <el-button class="action-item-button" :icon="Plus" circle size="large" />
+                <el-button class="action-item-button" :icon="Plus" circle size="large" @click="addBot"/>
             </div>
             <div class="action-item" @click="openSettings">
-                <el-button class="action-item-button" :icon="Setting" circle size="large" />
+                <el-button class="action-item-button" :icon="Setting" circle size="large" @click="openSettings"/>
             </div>
             <div class="action-item" @click="openAbout">
-                <el-button class="action-item-button" :icon="InfoFilled" circle size="large" />
+                <el-button class="action-item-button" :icon="InfoFilled" circle size="large" @click="openAbout"/>
             </div>
         </div>
     </div>
@@ -132,7 +132,7 @@ onMounted(() => {
     position: relative;
     width: 48px;
     height: 48px;
-    border-radius: 8px; 
+    border-radius: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     transition: all 0.3s ease;
@@ -151,7 +151,6 @@ onMounted(() => {
 .avatar-container .el-avatar {
     width: 100% !important;
     height: 100% !important;
-    border-radius: 4px;
 }
 
 

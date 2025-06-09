@@ -26,9 +26,8 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"] // 添加路径映射
+      "vuex": ["node_modules/vuex/dist/vuex.mjs"]
     }
   },
   "include": ["vite.config.ts","src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]

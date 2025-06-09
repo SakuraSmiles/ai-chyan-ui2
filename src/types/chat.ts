@@ -11,3 +11,26 @@ export interface ChatMessage {
 export interface MessageInputEvent {
     content: string;
 }
+//机器人配置
+export interface BotConfig {
+  id: string;
+  name: string;
+  avatar?: string;
+  baseURL: string;
+  apiKey?: string;
+  model?: string;
+  description?: string;
+  header?: string  | object;
+  body?: string | object;
+}
+
+export interface ModelConfig {
+  id: string;
+  name: string;
+  avatar: string;
+  baseURL: string;
+  apiKey: string;
+  description: string;
+  header?: string  | object;
+  body: string | object;
+}

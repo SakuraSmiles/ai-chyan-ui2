@@ -1,0 +1,41 @@
+{
+    "models": [
+        {
+            "id": "deepseek-chat",
+            "name": "DeepSeek Chat",
+            "avatar": "deepseek.png",
+            "baseURL": "https://api.deepseek.com/chat/completions",
+            "description": "DeepSeek-V3-0324",
+            "header": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${apiKey}"
+            },
+            "body": {
+                "model": "deepseek-chat"
+            }
+        },
+        {
+            "id": "deepseek-reasoner",
+            "name": "DeepSeek Reasoner",
+            "avatar": "deepseek.png",
+            "baseURL": "https://api.deepseek.com/chat/completions",
+            "description": "DeepSeek-R1-0528",
+            "header": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${apiKey}"
+            },
+            "body": {
+                "model": "deepseek-reasoner"
+            }
+        },
+        {
+            "id": "custom",
+            "name": "自定义模型",
+            "avatar": "robot.png",
+            "baseURL": "http://localhost:8080/rag/search",
+            "description": "自定义 API 配置",
+            "header": {},
+            "body": {}
+        }
+    ]
+}

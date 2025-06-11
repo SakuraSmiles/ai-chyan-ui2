@@ -1,5 +1,5 @@
 import { createStore } from 'vuex'
-import type { BotConfig } from '../types/chat'
+import type { BotConfig,StreamRequestConfig } from '../types/chat'
 
 // 定义状态接口
 export interface State {
@@ -17,7 +17,47 @@ export default createStore<State>({
         name: '自定义机器人对话',
         baseURL: 'http://localhost:8080/rag/search',
         apiKey: '',
-        model: 'custom'
+        model: 'custom',
+        streamConfig: {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ${apiKey}',
+            'Content-Type': 'application/json'
+          },
+          body: {
+            model: '${model}',
+            messages: [{
+              role: 'user',
+              content: '${content}'
+            }],
+            stream: true
+          },
+          stream: true
+        }
+      },
+      {
+        id: '2',
+        avatar: 'deepseek.png',
+        name: '自定义机器人对话',
+        baseURL: 'https://api.deepseek.com/chat/completions',
+        apiKey: 'sk-b73cb7b8f5464f2690eff37eab1b4046',
+        model: 'deepseek-chat',
+        streamConfig: {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ${apiKey}',
+            'Content-Type': 'application/json'
+          },
+          body: {
+            model: '${model}',
+            messages: [{
+              role: 'user',
+              content: '${content}'
+            }],
+            stream: true
+          },
+          stream: true
+        }
       }
     ],
     currentBotId: '1'

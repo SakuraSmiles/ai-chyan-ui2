@@ -1,11 +1,12 @@
 <template>
   <div class="message-history">
-    <div v-for="message in messages" :key="message.id" class="message-item">
+    <div v-for="message in messages" :key="message.id + (message.reply ? '_rendered' : '_loading')"
+      class="message-item">
       <!-- 系统消息 -->
       <div v-if="message.type === 'system'" class="system-message">
         <div class="bubble">{{ message.reply }}</div>
       </div>
-      
+
       <!-- 用户消息 -->
       <template v-else>
         <div class="user-message">
@@ -17,7 +18,7 @@
             <el-avatar :size="36" icon="UserFilled" />
           </div>
         </div>
-        
+
         <!-- 助手回复 -->
         <div class="assistant-message" v-if="message.reply">
           <div class="avatar">
@@ -26,14 +27,10 @@
           <div class="content">
             <div class="name">助手</div>
             <!-- <div class="bubble">{{ message.reply }}</div> -->
-             <Markdown 
-              class="bubble" 
-              :content="message.reply" 
-              :id="'md-' + message.id" 
-            />
+            <Markdown :content="message.reply" :id="'md-' + message.id" :renderThreshold="30" />
           </div>
         </div>
-        
+
         <!-- 加载状态 -->
         <div class="assistant-message" v-else>
           <div class="avatar">
@@ -86,7 +83,8 @@ defineProps<{
   color: #909399;
 }
 
-.user-message, .assistant-message {
+.user-message,
+.assistant-message {
   display: flex;
   margin: 8px 0;
 }
@@ -115,7 +113,7 @@ defineProps<{
 }
 
 .bubble {
-  padding: 12px;
+  padding: 12px 28px;
   border-radius: 4px;
   line-height: 1.5;
   word-break: break-word;
@@ -156,9 +154,13 @@ defineProps<{
 }
 
 @keyframes bounce {
-  0%, 80%, 100% {
+
+  0%,
+  80%,
+  100% {
     transform: scale(0);
   }
+
   40% {
     transform: scale(1);
   }

@@ -27,7 +27,7 @@
           <div class="content">
             <div class="name">助手</div>
             <!-- <div class="bubble">{{ message.reply }}</div> -->
-            <Markdown :content="message.reply" :id="'md-' + message.id" :renderThreshold="30" />
+            <Markdown class="bubble" :content="message.reply" :id="'md-' + message.id" :renderThreshold="30" />
           </div>
         </div>
 
@@ -113,7 +113,7 @@ defineProps<{
 }
 
 .bubble {
-  padding: 12px 28px;
+  padding: 12px 16px;
   border-radius: 4px;
   line-height: 1.5;
   word-break: break-word;

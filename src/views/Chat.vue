@@ -103,16 +103,18 @@ const buildRequestConfig = (content: string) => {
         processedBody[key] = value;
       }
     }
-
-    // 添加消息内容
     if (processedBody.messages) {
-      processedBody.messages = [
-        ...messages.value.map(msg => ({
-          role: msg.type === 'user' ? 'user' : 'assistant',
-          content: msg.type === 'user' ? msg.content : msg.reply
-        }))
-      ];
+      processedBody.messages[processedBody.messages.length - 1].content = content
     }
+    // 添加消息内容
+    // if (processedBody.messages) {
+    //   processedBody.messages = [
+    //     ...messages.value.map(msg => ({
+    //       role: msg.type === 'user' ? 'user' : 'assistant',
+    //       content: msg.type === 'user' ? msg.content : msg.reply
+    //     }))
+    //   ];
+    // }
 
     body = JSON.stringify(processedBody);
   }
@@ -128,10 +130,9 @@ const buildRequestConfig = (content: string) => {
 // 处理流式响应
 const handleStreamResponse = async (config: any) => {
   if (!currentMessageId.value) return;
-  console.log(config)
   const index = messages.value.findIndex(msg => msg.id === currentMessageId.value);
   if (index === -1) return;
-
+  // return;
   // 使用NetworkManager发送请求
   const response = await fetch(config.url, {
     method: config.method,

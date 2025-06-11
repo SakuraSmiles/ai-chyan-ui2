@@ -1,5 +1,5 @@
 import { createStore } from 'vuex'
-import type { BotConfig,StreamRequestConfig } from '../types/chat'
+import type { BotConfig } from '../types/chat'
 
 // 定义状态接口
 export interface State {

@@ -1,5 +1,5 @@
 <template>
-  <div class="markdown-renderer" v-html="renderedContent"></div>
+  <div class="markdown-container" v-html="renderedContent"></div>
 </template>
 
 <script lang="ts">
@@ -15,7 +15,6 @@ declare module 'marked' {
   }
 }
 export default defineComponent({
-  name: 'MarkdownRenderer',
   props: {
     content: {
       type: String,
@@ -31,7 +30,7 @@ export default defineComponent({
         const language = hljs.getLanguage(lang) ? lang : 'plaintext';
         return hljs.highlight(code, { language }).value;
       },
-      langPrefix: 'hljs language-', // 与 highlight.js 配合使用
+      langPrefix: 'hljs language-',
       breaks: true,
       gfm: true
     });

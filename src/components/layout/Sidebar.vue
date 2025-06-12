@@ -42,26 +42,26 @@ watch(
     () => route.params.botId,
     (newBotId) => {
         if (newBotId) {
-            store.commit('setCurrentBotId', newBotId)
+            store.dispatch('changeSelectBot',newBotId)
         }
     }
 )
 
 // 选择机器人
 const selectBot = (bot: BotConfig) => {
-    store.commit('setCurrentBotId', bot.id)
+    store.dispatch('changeSelectBot', bot.id)
     router.push({ name: 'Chat', params: { botId: bot.id } })
 }
 
 // 添加机器人
 const addBot = () => {
-    store.commit('setCurrentBotId', null)
+    store.dispatch('changeSelectBot', null)
     router.push({ name: 'New' })
 }
 
 // 打开关于
 const about = () => {
-    store.commit('setCurrentBotId', null)
+    store.dispatch('changeSelectBot', null)
     router.push({ name: 'About' })
 }
 

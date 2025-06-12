@@ -50,6 +50,7 @@ import { getImg } from '../utils/commonUtil'
 import modelConfigs from '@/config/models.json'
 import type { ModelConfig, BotConfig } from '../types/chat'
 import type { FormInstance, FormRules } from 'element-plus'
+import { generateShortUUID } from '../utils/uuid'
 
 const store = useStore()
 const router = useRouter()
@@ -110,7 +111,7 @@ const confirmForm = async (formEl: FormInstance | undefined) => {
 }
 
 const saveBot = () => {
-  const newId = String(store.state.bots.length + 1)
+  const newId = generateShortUUID()
   const selectedModel = modelOptions.value.find(m => m.id === selectedModelId.value)
   const newBot: BotConfig = {
     id: newId,
@@ -118,7 +119,16 @@ const saveBot = () => {
     name: form.name || `${selectedModel?.name || '新助手'} ${newId}`,
     baseURL: form.baseURL,
     apiKey: form.apiKey,
-    model: form.model
+    model: form.model,
+    streamConfig: {
+      headers: { ...JSON.parse(form.header as string) },
+      body: {
+        messages: [{ role: 'user', content: '${content}' }]
+        , ...JSON.parse(form.body as string)
+      },
+      method: "POST",
+      stream: true
+    }
   }
   store.dispatch('addBotAndSelect', newBot)
   router.push({ name: 'Chat', params: { botId: newId } })

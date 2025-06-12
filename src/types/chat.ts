@@ -5,6 +5,7 @@ export interface ChatMessage {
   content: string;                        // 用户消息内容
   reply: string;                          // 助手回复内容
   timestamp: Date;                        // 消息时间戳
+  botId?: string;
 }
 
 // 消息输入组件的事件类型
@@ -25,6 +26,8 @@ export interface BotConfig {
   name: string;
   avatar?: string;
   baseURL: string;
+  header?: string | object;
+  body?: string | object;
   apiKey?: string;
   model?: string;
   description?: string;

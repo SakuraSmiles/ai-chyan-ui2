@@ -1,68 +1,27 @@
 import { createStore } from 'vuex'
-import type { BotConfig } from '../types/chat'
-
+import type { BotConfig, ChatMessage } from '../types/chat'
+import { chatStore } from './storage';
+import { toRaw } from 'vue';
+import { generateShortUUID } from '../utils/uuid'
 // 定义状态接口
 export interface State {
   bots: BotConfig[]
   currentBotId: string | null
+  chatHistory: ChatMessage[]
 }
 
 // 创建 Vuex store
-export default createStore<State>({
+const store = createStore<State>({
   state: {
-    bots: [
-      {
-        id: '1',
-        avatar: 'robot.png',
-        name: '自定义机器人对话',
-        baseURL: 'http://localhost:8080/rag/search',
-        apiKey: '',
-        model: 'custom',
-        streamConfig: {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ${apiKey}',
-            'Content-Type': 'application/json'
-          },
-          body: {
-            model: '${model}',
-            messages: [{
-              role: 'user',
-              content: '${content}'
-            }],
-            stream: true
-          },
-          stream: true
-        }
-      },
-      {
-        id: '2',
-        avatar: 'deepseek.png',
-        name: '自定义机器人对话',
-        baseURL: 'https://api.deepseek.com/chat/completions',
-        apiKey: 'sk-b73cb7b8f5464f2690eff37eab1b4046',
-        model: 'deepseek-chat',
-        streamConfig: {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ${apiKey}',
-            'Content-Type': 'application/json'
-          },
-          body: {
-            model: '${model}',
-            messages: [{
-              role: 'user',
-              content: '${content}'
-            }],
-            stream: true
-          },
-          stream: true
-        }
-      }
-    ],
-    currentBotId: '1'
+    bots: [],
+    currentBotId: null,
+    chatHistory: []
   },
   mutations: {
+    LOAD_STORED_DATA(state, payload) {
+      state.bots = payload.bots || [];
+      state.currentBotId = payload.currentBotId || null;
+    },
     // 添加新的机器人配置
     addBot(state: { bots: BotConfig[] }, bot: BotConfig) {
       state.bots.push(bot)
@@ -73,12 +32,42 @@ export default createStore<State>({
     }
   },
   actions: {
+    async loadPersistedData({ commit }) {
+      // 从IndexedDB加载所有持久化数据
+      const [bots, currentBotId] = await Promise.all([
+        chatStore.getItem('bots'),
+        chatStore.getItem('currentBotId')
+      ]);
+
+      commit('LOAD_STORED_DATA', {
+        bots,
+        currentBotId
+      });
+    },
+    async changeSelectBot({ commit }, id: string | null) {
+      commit('setCurrentBotId', id)
+      await chatStore.setItem('currentBotId', id)
+    },
     // 添加机器人并设置为当前选中
-    addBotAndSelect({ commit }, bot: BotConfig) {
+    async addBotAndSelect({ commit, state }, bot: BotConfig) {
       commit('addBot', bot)
       commit('setCurrentBotId', bot.id)
+      await chatStore.setItem('bots', toRaw(state.bots));
+      await chatStore.setItem('chatHistory_' + bot.id, [
+        {
+          id: generateShortUUID(),
+          type: 'system',
+          content: '',
+          reply: '您好！我是' + (bot.name || '智障机器人') + '(' + bot.model + ')，有什么可以帮您的吗？',
+          timestamp: new Date()
+        }]);
+      await chatStore.setItem('currentBotId', bot.id)
       return bot
-    }
+    },
+    async saveChatHistory({ state }) {
+      // 保存聊天记录（带1秒防抖）
+      await chatStore.setItem('chatHistory', toRaw(state.chatHistory));
+    },
   },
   getters: {
     // 获取所有机器人
@@ -89,3 +78,5 @@ export default createStore<State>({
     }
   }
 })
+store.dispatch('loadPersistedData');
+export default store;

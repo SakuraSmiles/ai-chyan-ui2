@@ -11,39 +11,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
 import { sseManager } from '../utils/sseManager';
 import MessageInput from '../components/chat/MessageInput.vue';
 import MessageHistory from '../components/chat/MessageHistory.vue';
 import type { ChatMessage } from '../types/chat';
 import { useStore } from 'vuex';
 import { extractContent } from '../utils/sseUtil';
+import { loadMessage, addMessage } from '../store/storage';
+import { useRoute } from 'vue-router';
 
-// 初始消息数据
-const messages = ref<ChatMessage[]>([
-  {
-    id: '1',
-    type: 'system',
-    content: '',
-    reply: '您好！我是智能助手，有什么可以帮您的吗？',
-    timestamp: new Date()
-  },{
-    id:'2',
-    type:'user',
-    content:'你好',
-    reply:"当然可以！以下是一个简单的 Python 代码示例，它实现了一个计算两个数字之和的函数，并打印结果：\n\n```python\ndef add_numbers(a, b):\n    \"\"\"计算两个数字的和\"\"\"\n    return a + b\n\n# 输入两个数字\nnum1 = float(input(\"请输入第一个数字: \"))\nnum2 = float(input(\"请输入第二个数字: \"))\n\n# 调用函数并打印结果\nresult = add_numbers(num1, num2)\nprint(f\"{num1} + {num2} = {result}\")\n```\n\n### 代码说明：\n1. **`add_numbers(a, b)`**：自定义函数，接收两个参数并返回它们的和。\n2. **`input()`**：获取用户输入的数字（转换为浮点数 `float` 以支持小数）。\n3. **`print(f\"...\")`**：使用 f-string 格式化输出结果。\n\n### 运行效果：\n```\n请输入第一个数字: 3.5\n请输入第二个数字: 2.5\n3.5 + 2.5 = 6.0\n```\n\n如果需要其他语言（如 JavaScript、Java、C++）或特定功能的代码示例，可以告诉我!",
-    timestamp: new Date()
-  }
-]);
 const store = useStore();
-
+// 初始消息数据
+const messages = ref<ChatMessage[]>([]);
+const route = useRoute();
 // 获取当前机器人配置
 const currentBot = computed(() => store.getters.currentBot);
 const currentMessageId = ref<string | null>(null);
 const abortController = ref<AbortController | null>(null);
+const loadHistory = async () => {
+  messages.value = await loadMessage(currentBot.value.id)
+}
 const handleSendMessage = async (content: string) => {
   // 添加用户消息
   const newMessage: ChatMessage = {
+    botId:currentBot.value.id,
     id: Date.now().toString(),
     type: 'user',
     content,
@@ -53,6 +45,7 @@ const handleSendMessage = async (content: string) => {
 
   messages.value.push(newMessage);
   currentMessageId.value = newMessage.id;
+  addMessage(toRaw(newMessage));
   scrollToBottom();
 
   try {
@@ -190,6 +183,8 @@ const handleStreamResponse = async (config: any) => {
         if (content) {
           messages.value[index].reply += content;
           messages.value = [...messages.value];
+
+          addMessage(toRaw(messages.value[index]));
           scrollToBottom();
         }
       } catch (error) {
@@ -223,6 +218,19 @@ const scrollToBottom = () => {
     }
   });
 };
+
+watch(
+  () => route.params.botId,
+  (newBotId) => {
+    if (newBotId) {
+      loadHistory();
+    }
+  }
+);
+
+onMounted(() => {
+  loadHistory();
+});
 onUnmounted(() => {
   sseManager.close();
 });

@@ -3,12 +3,13 @@ import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-rou
 import About from '../views/About.vue'
 import Chat from '../views/Chat.vue'
 import New from '../views/New.vue'
+import store from '../store'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Home',
-    redirect: '/chat', // 默认重定向到聊天页面
+    redirect: store.state.currentBotId == null ? 'about' : '/chat/' + store.state.currentBotId, // 默认重定向到聊天页面
     children: [
       {
         path: '/chat/:botId?',

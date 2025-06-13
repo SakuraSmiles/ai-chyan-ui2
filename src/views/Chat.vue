@@ -179,7 +179,6 @@ const handleStreamResponse = async (config: any) => {
       try {
         const jsonData = JSON.parse(jsonStr);
         const { content, type } = extractContent(jsonData);
-        console.log(type,content)
         // 直接更新消息内容，不进行额外处理
         if (content) {
           if (type == 'normal') {

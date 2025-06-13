@@ -62,7 +62,7 @@ defineProps<{
 .message-history {
   padding: 16px;
   overflow-y: auto;
-  height: calc(100vh - 200px);
+  height: auto;
 }
 
 .message-item {

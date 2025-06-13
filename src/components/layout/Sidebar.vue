@@ -2,18 +2,16 @@
     <div class="sidebar">
         <!-- 机器人列表区域 -->
         <div class="bot-list">
-            <div 
-                v-for="(bot, index) in bots" 
-                :key="index" 
-                class="bot-item"
-                :class="{ 'active': activeBotId === bot.id }" 
-                @click="selectBot(bot)"
-            >
-                <div class="avatar-container">
-                    <el-avatar shape="square" :size="48" :src="getImg(bot.avatar)">
-                        {{ bot.name.charAt(0) }}
-                    </el-avatar>
-                </div>
+            <div v-for="(bot, index) in bots" :key="index" class="bot-item"
+                :class="{ 'active': activeBotId === bot.id }" @click="selectBot(bot)">
+                <el-tooltip effect="dark" placement="right">
+                    <template #content> {{bot.name}} <br/> {{bot.model}} <br/> {{bot.id}} </template>
+                    <div class="avatar-container">
+                        <el-avatar shape="square" :size="48" :src="getImg(bot.avatar)">
+                            {{ bot.name.charAt(0) }}
+                        </el-avatar>
+                    </div>
+                </el-tooltip>
             </div>
         </div>
         <actions @addBot="addBot" @about="about"></actions>
@@ -42,7 +40,7 @@ watch(
     () => route.params.botId,
     (newBotId) => {
         if (newBotId) {
-            store.dispatch('changeSelectBot',newBotId)
+            store.dispatch('changeSelectBot', newBotId)
         }
     }
 )
@@ -69,7 +67,7 @@ const about = () => {
 onMounted(() => {
     if (bots.value.length > 0 && !route.params.botId) {
         selectBot(bots.value[0])
-    }else{
+    } else {
         addBot()
     }
 })
@@ -118,7 +116,7 @@ onMounted(() => {
     background-color: #e8f4ff;
 }
 
-.el-avatar{
+.el-avatar {
     --el-avatar-bg-color: none;
 }
 

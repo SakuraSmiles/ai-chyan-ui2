@@ -4,6 +4,7 @@ export interface ChatMessage {
   type: 'system' | 'user' | 'assistant';  // 消息类型
   content: string;                        // 用户消息内容
   reply: string;                          // 助手回复内容
+  think?:string;                           // 助手思考内容
   timestamp: Date;                        // 消息时间戳
   botId?: string;
 }

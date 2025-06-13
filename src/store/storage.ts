@@ -13,31 +13,7 @@ export const initStorage = async () => {
     try {
         const botsExists = await chatStore.getItem('bots');
         if (!botsExists) {
-            await chatStore.setItem('bots', [
-                {
-                    id: '1',
-                    avatar: 'deepseek.png',
-                    name: '自定义机器人对话',
-                    baseURL: 'https://api.deepseek.com/chat/completions',
-                    apiKey: 'sk-b73cb7b8f5464f2690eff37eab1b4046',
-                    model: 'deepseek-chat',
-                    streamConfig: {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ${apiKey}',
-                            'Content-Type': 'application/json'
-                        },
-                        body: {
-                            model: '${model}',
-                            messages: [{
-                                role: 'user',
-                                content: '${content}'
-                            }],
-                            stream: true
-                        },
-                        stream: true
-                    }
-                }])
+            await chatStore.setItem('bots', [])
         }
         const historyExists = await chatStore.getItem('chatHistory');
         if (!historyExists) {

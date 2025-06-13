@@ -15,7 +15,7 @@
         </el-form-item>
 
         <el-form-item label='对话标题' prop="name">
-          <el-input v-model='form.name' placeholder='请输入对话标题' />
+          <el-input v-model='form.name' placeholder='请输入机器人名称' />
         </el-form-item>
 
         <el-form-item label='接口地址' prop="baseURL" required>
@@ -130,8 +130,9 @@ const saveBot = () => {
       stream: true
     }
   }
-  store.dispatch('addBotAndSelect', newBot)
-  router.push({ name: 'Chat', params: { botId: newId } })
+  store.dispatch('addBotAndSelect', newBot).then(bot =>{
+    router.push({ name: 'Chat', params: { botId: bot.id } })
+  })
 }
 
 const cancel = () => {

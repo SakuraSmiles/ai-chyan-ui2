@@ -69,6 +69,8 @@ const about = () => {
 onMounted(() => {
     if (bots.value.length > 0 && !route.params.botId) {
         selectBot(bots.value[0])
+    }else{
+        addBot()
     }
 })
 </script>

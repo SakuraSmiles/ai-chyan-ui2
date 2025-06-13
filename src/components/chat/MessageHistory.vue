@@ -20,14 +20,14 @@
         </div>
 
         <!-- 助手回复 -->
-        <div class="assistant-message" v-if="message.reply">
+        <div class="assistant-message" v-if="message.reply||message.think">
           <div class="avatar">
             <el-avatar :size="36" icon="Avatar" />
           </div>
           <div class="content">
             <div class="name">助手</div>
             <!-- <div class="bubble">{{ message.reply }}</div> -->
-            <Markdown class="bubble" :content="message.reply" :id="'md-' + message.id" :renderThreshold="30" />
+            <Markdown class="bubble" :content="message.reply" :think="message.think" :id="'md-' + message.id" :renderThreshold="30" />
           </div>
         </div>
 

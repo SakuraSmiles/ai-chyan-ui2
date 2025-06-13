@@ -35,11 +35,12 @@ const loadHistory = async () => {
 const handleSendMessage = async (content: string) => {
   // 添加用户消息
   const newMessage: ChatMessage = {
-    botId:currentBot.value.id,
+    botId: currentBot.value.id,
     id: Date.now().toString(),
     type: 'user',
     content,
     reply: '',
+    think:'',
     timestamp: new Date()
   };
 
@@ -177,12 +178,18 @@ const handleStreamResponse = async (config: any) => {
       const jsonStr = event.substring(dataPrefix.length);
       try {
         const jsonData = JSON.parse(jsonStr);
-        const content = extractContent(jsonData);
-
+        const { content, type } = extractContent(jsonData);
+        console.log(type,content)
         // 直接更新消息内容，不进行额外处理
         if (content) {
-          messages.value[index].reply += content;
-          messages.value = [...messages.value];
+          if (type == 'normal') {
+            messages.value[index].reply += content;
+            messages.value = [...messages.value];
+          }
+          if (type == 'reasoning') {
+            messages.value[index].think += content;
+            messages.value = [...messages.value];
+          }
 
           addMessage(toRaw(messages.value[index]));
           scrollToBottom();

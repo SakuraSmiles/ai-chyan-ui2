@@ -14,11 +14,26 @@ declare module 'marked' {
     langPrefix?: string;
   }
 }
+
+const escapeHtml = (unsafe: string) => {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 export default defineComponent({
   props: {
     content: {
       type: String,
       required: true,
+      default: ''
+    },
+    think: {
+      type: String,
+      required: false,
       default: ''
     }
   },
@@ -35,10 +50,22 @@ export default defineComponent({
       gfm: true
     });
     // 渲染 Markdown 内容
-    const renderMarkdown = async (content: string) => {
-      const html = await marked(content);
+    const renderMarkdown = async (think: string, content: string) => {
+      let finalHtml = '';
+
+      if (think) {
+        if(think == undefined){
+          think = ""
+        }
+        // 使用escapeHtml转义特殊字符，防止XSS
+        const escapedThink = escapeHtml(think);
+        // 添加思考框的HTML结构
+        finalHtml += `<div class="think">${escapedThink}</div>`;
+      }
+      const mdHtml = await marked(content);
+      finalHtml += mdHtml;
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
+      const doc = parser.parseFromString(finalHtml, 'text/html');
 
       // 其余代码不变...
       const codeBlocks = doc.querySelectorAll('pre code');
@@ -56,13 +83,14 @@ export default defineComponent({
 
     // 初始渲染
     onMounted(async () => {
-      renderedContent.value = await renderMarkdown(props.content);
+      renderedContent.value = await renderMarkdown(props.think, props.content);
     });
 
     // 监听内容变化
-    watch(() => props.content, async (newContent) => {
-      renderedContent.value = await renderMarkdown(newContent);
-    });
+    watch([() => props.think, () => props.content],
+      async ([newThink, newContent]) => {
+        renderedContent.value = await renderMarkdown(newThink, newContent);
+      });
 
     return {
       renderedContent
@@ -119,7 +147,8 @@ export default defineComponent({
 }
 
 .markdown-container p {
-  margin-bottom: 1em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .markdown-container ul,
@@ -179,5 +208,9 @@ export default defineComponent({
   background: #ffffff66;
   margin: 5px;
   border-radius: 5px;
+  /* 思考框内容使用等宽字体更合适 */
+  font-family: monospace, monospace;
+  /* 添加轻微边框 */
+  border: 1px solid #eaeaea;
 }
 </style>

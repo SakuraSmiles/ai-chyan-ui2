@@ -1,5 +1,20 @@
-export const extractContent = (jsonData: any): string => {
-  // 尝试多种可能的响应格式
+export type ContentType = 'normal' | 'reasoning';
+
+export const extractContent = (jsonData: any): { content: string, type: ContentType } => {
+  if (jsonData.choices?.[0]?.delta?.role) {
+    return {
+      content: "",
+      type: 'normal'
+    }
+  }
+  if (jsonData.choices?.[0]?.delta?.reasoning_content) {
+    return {
+      content: jsonData.choices?.[0]?.delta?.reasoning_content,
+      type: 'reasoning'
+    };
+  }
+
+  // 然后尝试其他可能的响应格式
   const contentSources = [
     jsonData.choices?.[0]?.delta?.content,       // OpenAI格式
     jsonData.choices?.[0]?.message?.content,    // 另一种OpenAI格式
@@ -16,13 +31,19 @@ export const extractContent = (jsonData: any): string => {
     if (source !== undefined && source !== null) {
       // 如果是对象，尝试提取纯文本
       if (typeof source === 'object') {
-        return extractTextFromObject(source);
+        return {
+          content: extractTextFromObject(source),
+          type: 'normal'
+        };
       }
-      return typeof source === 'string' ? source : String(source);
+      return {
+        content: typeof source === 'string' ? source : String(source),
+        type: 'normal'
+      };
     }
   }
-  
-  return ''; // 默认返回空字符串
+
+  return { content: '', type: 'normal' }; // 默认返回空字符串
 };
 
 // 从对象中提取纯文本
@@ -31,12 +52,12 @@ const extractTextFromObject = (obj: any): string => {
   if (obj.text) {
     return obj.text;
   }
-  
+
   // 如果对象有 content 属性
   if (obj.content) {
     return obj.content;
   }
-  
+
   // 尝试从高亮对象中提取纯文本
   if (obj.children && Array.isArray(obj.children)) {
     return obj.children.map((child: any) => {
@@ -45,7 +66,7 @@ const extractTextFromObject = (obj: any): string => {
       return '';
     }).join('');
   }
-  
+
   // 最后手段，返回JSON字符串
   return JSON.stringify(obj);
 };

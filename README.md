@@ -68,12 +68,12 @@ npm run build
 ## 使用说明
 
 1. 启动项目后，通过浏览器（推荐谷歌浏览器）地址栏输入：[http://localhost:5173/](http://localhost:5173) 进入页面。
-![输入图片说明](doctutorial001.png)
+![输入图片说明](doc/tutorial001.png)
 
 2. 选择模型，填写对应接口官网申请到的API Key，点击"保存设置"创建机器人。
 
 3. 在左侧机器人列表中选择创建的机器人进行聊天。
-![输入图片说明](doctutorial002.png)
+![输入图片说明](doc/tutorial002.png)
 
 
 ## 技术栈

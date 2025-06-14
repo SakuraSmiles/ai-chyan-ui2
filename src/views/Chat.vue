@@ -12,12 +12,11 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
-import { sseManager } from '../utils/sseManager';
 import MessageInput from '../components/chat/MessageInput.vue';
 import MessageHistory from '../components/chat/MessageHistory.vue';
 import type { ChatMessage } from '../types/chat';
 import { useStore } from 'vuex';
-import { extractContent } from '../utils/sseUtil';
+import { createStreamHandler, type StreamHandler } from '../utils/streamHandler'
 import { loadMessage, addMessage } from '../store/storage';
 import { useRoute } from 'vue-router';
 
@@ -27,6 +26,8 @@ const messages = ref<ChatMessage[]>([]);
 const route = useRoute();
 // 获取当前机器人配置
 const currentBot = computed(() => store.getters.currentBot);
+// 创建流式处理器（根据当前模型类型）
+const streamHandler = ref<StreamHandler>(createStreamHandler(currentBot.value.model));
 const currentMessageId = ref<string | null>(null);
 const abortController = ref<AbortController | null>(null);
 const loadHistory = async () => {
@@ -40,7 +41,7 @@ const handleSendMessage = async (content: string) => {
     type: 'user',
     content,
     reply: '',
-    think:'',
+    think: '',
     timestamp: new Date()
   };
 
@@ -100,16 +101,6 @@ const buildRequestConfig = (content: string) => {
     if (processedBody.messages) {
       processedBody.messages[processedBody.messages.length - 1].content = content
     }
-    // 添加消息内容
-    // if (processedBody.messages) {
-    //   processedBody.messages = [
-    //     ...messages.value.map(msg => ({
-    //       role: msg.type === 'user' ? 'user' : 'assistant',
-    //       content: msg.type === 'user' ? msg.content : msg.reply
-    //     }))
-    //   ];
-    // }
-
     body = JSON.stringify(processedBody);
   }
 
@@ -124,83 +115,68 @@ const buildRequestConfig = (content: string) => {
 // 处理流式响应
 const handleStreamResponse = async (config: any) => {
   if (!currentMessageId.value) return;
+
   const index = messages.value.findIndex(msg => msg.id === currentMessageId.value);
   if (index === -1) return;
-  // return;
-  // 使用NetworkManager发送请求
-  const response = await fetch(config.url, {
-    method: config.method,
-    headers: config.headers,
-    body: config.body,
-    signal: config.signal
-  });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  try {
+    const response = await fetch(config.url, {
+      method: config.method,
+      headers: config.headers,
+      body: config.body,
+      signal: config.signal
+    });
 
-  if (!response.body) {
-    throw new Error('No response body');
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder('utf-8');
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      // 流结束，设置当前消息ID为null
-      currentMessageId.value = null;
-      break;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // 解码并添加到缓冲区
-    buffer += decoder.decode(value, { stream: true });
+    if (!response.body) {
+      throw new Error('No response body');
+    }
 
-    // 处理SSE格式的数据
-    const events = buffer.split('\n\n');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
 
-    // 保留未完整的事件
-    buffer = events.pop() || '';
+    // 流处理循环
+    const processStream = async () => {
+      while (true) {
+        const { done, value } = await reader.read();
 
-    for (const event of events) {
-      // 跳过空行和结束标记
-      if (!event.trim() || event === 'data: [DONE]') continue;
-
-      // 提取数据部分
-      const dataPrefix = 'data: ';
-      if (!event.startsWith(dataPrefix)) {
-        console.warn('Unexpected event format:', event);
-        continue;
-      }
-
-      const jsonStr = event.substring(dataPrefix.length);
-      try {
-        const jsonData = JSON.parse(jsonStr);
-        const { content, type } = extractContent(jsonData);
-        // 直接更新消息内容，不进行额外处理
-        if (content) {
-          if (type == 'normal') {
-            messages.value[index].reply += content;
-            messages.value = [...messages.value];
-          }
-          if (type == 'reasoning') {
-            messages.value[index].think += content;
-            messages.value = [...messages.value];
-          }
-
-          addMessage(toRaw(messages.value[index]));
-          scrollToBottom();
+        if (done) {
+          currentMessageId.value = null;
+          return;
         }
-      } catch (error) {
-        console.warn('JSON解析失败:', error, '原始数据:', jsonStr);
-        // 如果解析失败，直接作为文本处理
-        messages.value[index].reply += jsonStr;
-        messages.value = [...messages.value];
-        scrollToBottom();
+
+        // 解码数据块
+        const chunk = decoder.decode(value, { stream: true });
+
+        // 使用处理器处理数据块
+        const results = streamHandler.value.processChunk(chunk);
+
+        // 处理处理器返回的结果
+        for (const result of results) {
+          if (result.content) {
+            if (result.type === 'normal') {
+              messages.value[index].reply += result.content;
+            } else if (result.type === 'reasoning') {
+              messages.value[index].think += result.content;
+            }
+
+            // 触发响应式更新
+            messages.value = [...messages.value];
+            addMessage(toRaw(messages.value[index]));
+            scrollToBottom();
+          }
+        }
       }
-    }
+    };
+
+    // 开始处理流
+    await processStream();
+  } catch (error) {
+    console.error('流处理错误:', error);
+    currentMessageId.value = null;
   }
 };
 
@@ -229,6 +205,7 @@ watch(
   () => route.params.botId,
   (newBotId) => {
     if (newBotId) {
+      streamHandler.value = createStreamHandler(currentBot.value.model);
       loadHistory();
     }
   }
@@ -238,7 +215,6 @@ onMounted(() => {
   loadHistory();
 });
 onUnmounted(() => {
-  sseManager.close();
 });
 </script>
 

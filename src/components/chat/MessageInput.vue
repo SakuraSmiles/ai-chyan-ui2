@@ -1,15 +1,10 @@
 <template>
   <div class="message-input-container">
-    <el-input
-      v-model="inputText"
-      type="textarea"
-      :rows="3"
-      placeholder="请输入消息..."
-      resize="none"
-      @keydown.enter.exact.prevent="handleSend"
-    />
+    <el-input v-model="inputText" type="textarea" :rows="3" placeholder="请输入消息..." resize="none"
+      @keydown.enter.exact.prevent="handleSend" />
     <div class="action-bar">
-      <el-button type="primary" @click="handleSend" :disabled="!inputText.trim()">
+      <el-button  :icon="Operation"/>
+      <el-button type="primary" @click="handleSend" :disabled="!inputText.trim()" style="width:90px">
         发送
       </el-button>
     </div>
@@ -18,7 +13,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-
+import { Operation } from '@element-plus/icons-vue'
 const emit = defineEmits<{
   (e: 'send', payload: string): void;
 }>();

@@ -21,7 +21,7 @@
         <el-form-item label='接口地址' prop="baseURL" required>
           <el-input v-model='form.baseURL' placeholder='请输入API接口地址' :disabled="!isCustomModel" />
         </el-form-item>
-        <el-form-item label='API Key' prop="apiKey" required>
+        <el-form-item label='API Key' prop="apiKey" :required="!isCustomModel">
           <el-input v-model='form.apiKey' placeholder='请输入API密钥' show-password />
         </el-form-item>
         <el-form-item label='请求头参数'>
@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang='ts'>
-import { reactive, ref, computed, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { getImg } from '../utils/commonUtil'
@@ -69,33 +69,32 @@ const form = reactive<BotConfig>({
   body: '',
   id: ''
 })
-const rules = reactive<FormRules<BotConfig>>({
+const baseRules = reactive<FormRules<BotConfig>>({
   baseURL: [
     { required: true, message: '接口地址不能为空', trigger: 'blur' }
-  ],
+  ]
+})
+
+// 创建动态规则（只在自定义模型时生效）
+const dynamicRules = reactive<FormRules<BotConfig>>({
   apiKey: [
     { required: true, message: 'API KEY不能为空', trigger: 'blur' }
   ]
 })
+// 创建响应式的规则引用
+const rules = ref<FormRules<BotConfig>>({ ...baseRules })
 // 是否自定义模型
-const isCustomModel = computed(() => selectedModelId.value === 'custom')
+const isCustomModel = computed(() => ['custom', 'ollama'].includes(selectedModelId.value))
 
 // 处理模型选择变化
 const handleModelChange = (modelId: string) => {
   const selectedModel = modelOptions.value.find(m => m.id === modelId)
   if (selectedModel) {
     form.model = selectedModel.id
-    if (!isCustomModel.value) {
-      form.baseURL = selectedModel.baseURL
-      form.apiKey = selectedModel.apiKey
-      form.body = JSON.stringify(selectedModel.body)
-      form.header = JSON.stringify(selectedModel.header)
-    } else {
-      form.baseURL = ''
-      form.apiKey = ''
-      form.body = ''
-      form.header = ''
-    }
+    form.baseURL = selectedModel.baseURL
+    form.apiKey = selectedModel.apiKey
+    form.body = JSON.stringify(selectedModel.body)
+    form.header = JSON.stringify(selectedModel.header)
   }
 }
 // 保存机器人配置
@@ -130,7 +129,7 @@ const saveBot = () => {
       stream: true
     }
   }
-  store.dispatch('addBotAndSelect', newBot).then(bot =>{
+  store.dispatch('addBotAndSelect', newBot).then(bot => {
     router.push({ name: 'Chat', params: { botId: bot.id } })
   })
 }
@@ -138,6 +137,19 @@ const saveBot = () => {
 const cancel = () => {
   router.go(-1)
 }
+
+watch(isCustomModel, (isCustom) => {
+  // 创建新的规则对象
+  const newRules = { ...baseRules }
+
+  if (isCustom) {
+    // 合并动态规则
+    Object.assign(newRules, dynamicRules)
+  }
+
+  // 更新规则引用（触发 Element Plus 重新绑定）
+  rules.value = newRules
+})
 
 // 初始化默认选择第一个模型
 onMounted(() => {

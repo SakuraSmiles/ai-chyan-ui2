@@ -31,6 +31,18 @@
             }
         },
         {
+            "id": "ollama",
+            "name": "本地Ollama模型",
+            "avatar": "ollama.png",
+            "baseURL": " http://localhost:11434/api/chat",
+            "description": "本地模型配置",
+            "header": {},
+            "body": {
+                "model": "huihui_ai/deepseek-r1-abliterated:32b",
+                "stream": true
+            }
+        },
+        {
             "id": "custom",
             "name": "自定义模型",
             "avatar": "robot.png",

@@ -54,13 +54,15 @@ export default defineComponent({
       let finalHtml = '';
 
       if (think) {
-        if(think == undefined){
+        if (think == undefined) {
           think = ""
         }
         // 使用escapeHtml转义特殊字符，防止XSS
         const escapedThink = escapeHtml(think);
         // 添加思考框的HTML结构
-        finalHtml += `<div class="think">${escapedThink}</div>`;
+        if (escapedThink.trim()) {
+          finalHtml += `<div class="think">${escapedThink}</div>`;
+        }
       }
       const mdHtml = await marked(content);
       finalHtml += mdHtml;

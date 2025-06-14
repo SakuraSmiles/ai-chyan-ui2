@@ -13,12 +13,10 @@
 
 <script setup lang="ts">
 import { onUnmounted } from 'vue';
-import { sseManager } from './utils/sseManager';
 import Sidebar from './components/layout/Sidebar.vue';
 
 
 onUnmounted(() => {
-  sseManager.close();
 });
 </script>
 

@@ -115,11 +115,6 @@ onMounted(() => {
 .bot-item:hover {
     background-color: #e8f4ff;
 }
-
-.el-avatar {
-    --el-avatar-bg-color: none;
-}
-
 .avatar-container {
     position: relative;
     width: 48px;

@@ -26,6 +26,7 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "baseUrl": ".",
     "paths": {
       "vuex": ["node_modules/vuex/dist/vuex.mjs"]
     }

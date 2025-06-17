@@ -6,7 +6,7 @@
           <el-select v-model='selectedModelId' placeholder='请选择模型' @change='handleModelChange' class='model-selector'>
             <el-option v-for='model in modelOptions' :key='model.id' :label='model.name' :value='model.id'>
               <div class='model-option'>
-                <el-avatar :size='24' :src='getImg(model.avatar)' />
+                <el-avatar :size='24' :src='getImg(model.avatar)' fit="scale-down"/>
                 <span class='model-name'>{{ model.name }}</span>
                 <el-tag size='small' type='info'>{{ model.description }}</el-tag>
               </div>

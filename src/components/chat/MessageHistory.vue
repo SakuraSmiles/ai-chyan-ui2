@@ -15,19 +15,20 @@
             <div class="bubble">{{ message.content }}</div>
           </div>
           <div class="avatar">
-            <el-avatar :size="36" icon="UserFilled" />
+            <el-avatar :size="36" />
           </div>
         </div>
 
         <!-- 助手回复 -->
-        <div class="assistant-message" v-if="message.reply||message.think">
+        <div class="assistant-message" v-if="message.reply || message.think">
           <div class="avatar">
-            <el-avatar :size="36" icon="Avatar" />
+            <el-avatar shape="square" :size="36" :src="getImg(avatar)" fit="scale-down" />
           </div>
           <div class="content">
-            <div class="name">助手</div>
+            <div class="name">{{ name }}</div>
             <!-- <div class="bubble">{{ message.reply }}</div> -->
-            <Markdown class="bubble" :content="message.reply" :think="message.think" :id="'md-' + message.id" :renderThreshold="30" />
+            <Markdown class="bubble" :content="message.reply" :think="message.think" :id="'md-' + message.id"
+              :renderThreshold="30" />
           </div>
         </div>
 
@@ -37,7 +38,7 @@
             <el-avatar :size="36" icon="Avatar" />
           </div>
           <div class="content">
-            <div class="name">助手</div>
+            <div class="name">{{ name }}</div>
             <div class="bubble loading">
               <span class="dot"></span>
               <span class="dot"></span>
@@ -51,8 +52,26 @@
 </template>
 
 <script setup lang="ts">
+import { useStore } from 'vuex';
 import type { ChatMessage } from '../../types/chat';
 import Markdown from '../textarea/Markdown.vue';
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { getImg } from '../../utils/commonUtil'
+const name = ref('');
+const avatar = ref('');
+const store = useStore();
+const route = useRoute();
+watch(
+  () => route.params.botId,
+  (newBotId) => {
+    if (newBotId) {
+      const bot = store.getters.currentBot;
+      name.value = bot.name
+      avatar.value = bot.avatar
+    }
+  }
+);
 defineProps<{
   messages: ChatMessage[];
 }>();

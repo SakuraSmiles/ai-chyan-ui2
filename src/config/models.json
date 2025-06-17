@@ -1,11 +1,23 @@
 {
     "models": [
         {
+            "id": "ollama",
+            "name": "本地Ollama模型",
+            "avatar": "ollama.png",
+            "baseURL": " http://localhost:11434/api/chat",
+            "description": "本地模型配置",
+            "header": {},
+            "body": {
+                "model": "huihui_ai/deepseek-r1-abliterated:32b",
+                "stream": true
+            }
+        },
+        {
             "id": "deepseek-chat",
             "name": "DeepSeek Chat",
             "avatar": "deepseek.png",
             "baseURL": "https://api.deepseek.com/chat/completions",
-            "description": "DeepSeek-V3-0324",
+            "description": "DeepSeek-V3",
             "header": {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer ${apiKey}"
@@ -20,25 +32,13 @@
             "name": "DeepSeek Reasoner",
             "avatar": "deepseek.png",
             "baseURL": "https://api.deepseek.com/chat/completions",
-            "description": "DeepSeek-R1-0528",
+            "description": "DeepSeek-R1",
             "header": {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer ${apiKey}"
             },
             "body": {
                 "model": "deepseek-reasoner",
-                "stream": true
-            }
-        },
-        {
-            "id": "ollama",
-            "name": "本地Ollama模型",
-            "avatar": "ollama.png",
-            "baseURL": " http://localhost:11434/api/chat",
-            "description": "本地模型配置",
-            "header": {},
-            "body": {
-                "model": "huihui_ai/deepseek-r1-abliterated:32b",
                 "stream": true
             }
         },

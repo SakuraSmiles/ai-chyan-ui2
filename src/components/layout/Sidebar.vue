@@ -7,7 +7,7 @@
                 <el-tooltip effect="dark" placement="right">
                     <template #content> {{bot.name}} <br/> {{bot.model}} <br/> {{bot.id}} </template>
                     <div class="avatar-container">
-                        <el-avatar shape="square" :size="48" :src="getImg(bot.avatar)">
+                        <el-avatar shape="square" :size="48" :src="getImg(bot.avatar)" fit="scale-down">
                             {{ bot.name.charAt(0) }}
                         </el-avatar>
                     </div>

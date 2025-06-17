@@ -7,6 +7,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import { initStorage } from './store/storage'
+import JsonEditor from 'json-editor-vue3'
 
 // 初始化存储后启动应用
 const launchApp = async () => {
@@ -21,7 +22,7 @@ const launchApp = async () => {
       timeout: 15000
     });
     app.config.globalProperties.$network = networkManager;
-
+    app.component('JsonEditor', JsonEditor)
     app.use(ElementPlus)
     app.mount('#app')
   } catch (error) {

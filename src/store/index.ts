@@ -73,7 +73,7 @@ const store = createStore<State>({
     // 获取所有机器人
     allBots: (state: { bots: any }) => state.bots,
     // 获取当前选中的机器人
-    currentBot: (state: { bots: any[]; currentBotId: any }) => {
+    currentBot: (state: { bots: any[]; currentBotId: any }): BotConfig => {
       return state.bots.find((bot: { id: any }) => bot.id === state.currentBotId) || state.bots[0]
     }
   }

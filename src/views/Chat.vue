@@ -1,12 +1,26 @@
 <template>
   <div class="chat-app">
     <el-main class="chat-container">
-      <MessageHistory :messages="messages" />
+      <el-row :gutter="8">
+        <el-col :span="isDrawerOpen ? 18 : 24" class="history-col">
+          <div class="scroll-container">
+            <MessageHistory :messages="messages" />
+          </div>
+        </el-col>
+        <transition name="slide-fade">
+          <el-col :span="6" v-if="isDrawerOpen" class="config-col">
+            <div class="scroll-container">
+              <MessageConfig />
+            </div>
+          </el-col>
+        </transition>
+      </el-row>
     </el-main>
 
     <el-footer height="auto" class="input-container">
-      <MessageInput @send="handleSendMessage" />
+      <MessageInput @send="handleSendMessage" @openConfig="openConfig" />
     </el-footer>
+
   </div>
 </template>
 
@@ -19,12 +33,13 @@ import { useStore } from 'vuex';
 import { createStreamHandler, type StreamHandler } from '../utils/streamHandler'
 import { loadMessage, addMessage } from '../store/storage';
 import { useRoute } from 'vue-router';
+import MessageConfig from '../components/chat/MessageConfig.vue';
 
 const store = useStore();
+const isDrawerOpen = ref(false)
 // 初始消息数据
 const messages = ref<ChatMessage[]>([]);
 const route = useRoute();
-// 获取当前机器人配置
 const currentBot = computed(() => store.getters.currentBot);
 // 创建流式处理器（根据当前模型类型）
 const streamHandler = ref<StreamHandler>(createStreamHandler(currentBot.value.model));
@@ -191,6 +206,9 @@ const handleError = () => {
     scrollToBottom();
   }
 };
+const openConfig = () => {
+  isDrawerOpen.value = !isDrawerOpen.value
+}
 // 滚动到底部方法
 const scrollToBottom = () => {
   nextTick(() => {
@@ -225,6 +243,10 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
+.el-row {
+  height: 100%;
+}
+
 .chat-app {
   display: flex;
   flex-direction: column;
@@ -234,12 +256,101 @@ onUnmounted(() => {
 
 .chat-container {
   flex: 1;
-  overflow-y: auto;
-  padding: 0;
+  overflow-x: hidden;
+  padding: 6px;
+  overflow: hidden;
 }
 
 .input-container {
   padding: 0;
-  /* border-top: 1px solid #dcdfe6; */
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.chat-row {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+/* 修改3: 设置历史消息区域为滚动容器 */
+.history-col {
+  transition: width 0.3s ease-out;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 修改4: 创建滚动容器 */
+/* .message-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+} */
+
+.history-col, 
+.config-col {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 修改5: 确保消息历史区域填满容器 */
+.message-container>.message-history {
+  flex: 1;
+  /* 占据全部可用空间 */
+} */
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+/* 调整配置列的内边距 */
+.config-col {
+  padding: 6px;
+}
+
+.config-col {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+.scroll-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 </style>

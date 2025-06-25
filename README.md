@@ -135,6 +135,8 @@ project/
 
 ## 更新日志
 
+**2025.06.25:**   引入electron,支持windows应用打包功能
+
 **2025.06.14:**   优化流数据处理,增加Ollama本地模型支持
 
 **2025.06.13:**   发布v1.0.0版本，支持基础模型对话，支持模型：deepseek-chat（deepseek-V3），deepseek-reasoner（deepseek-R1）

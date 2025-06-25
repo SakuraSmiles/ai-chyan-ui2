@@ -55,20 +55,26 @@
 import { useStore } from 'vuex';
 import type { ChatMessage } from '../../types/chat';
 import Markdown from '../textarea/Markdown.vue';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { getImg } from '../../utils/commonUtil'
 const name = ref('');
 const avatar = ref('');
 const store = useStore();
 const route = useRoute();
+const freshData = () => {
+  const bot = store.getters.currentBot;
+  name.value = bot.name
+  avatar.value = bot.avatar
+}
+onMounted(() => {
+  freshData()
+})
 watch(
   () => route.params.botId,
   (newBotId) => {
     if (newBotId) {
-      const bot = store.getters.currentBot;
-      name.value = bot.name
-      avatar.value = bot.avatar
+      freshData()
     }
   }
 );
